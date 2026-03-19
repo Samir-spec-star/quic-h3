@@ -91,11 +91,5 @@ Tests cover:
 - QPACK bit-masking correctness.
 - Cryptographic key derivations.
 
-##  Why Build This? (For Recruiters)
-Very few developers have manually constructed a transport protocol. This project demonstrates:
-1. **Deep Network Protocol Knowledge:** Understanding exactly how UDP packets become reliable, ordered streams.
-2. **Advanced Rust Concepts:** Heavy use of `Arc<Mutex<>>`, async/await concurrency, state machines, and safe zero-copy byte parsing (`bytes` crate).
-3. **Reading RFCs:** The ability to digest complex IETF documentation and translate rigid byte specifications into functioning code.
-
 ## 📄 License
 This project is licensed under the MIT License.
