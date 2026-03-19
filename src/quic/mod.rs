@@ -1,12 +1,3 @@
-//! QUIC Transport Protocol implementation
-//! 
-//! This module implements the core QUIC protocol components:
-//!  - variable-length integer encoding (varint)
-//!  - Packet parsing and serialization 
-//!  - Frame handling 
-//!  - Connection management 
-//!  - Stream multiplexing 
-
 
 pub mod varint;
 pub mod packet;
