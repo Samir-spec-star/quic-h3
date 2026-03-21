@@ -49,13 +49,16 @@ impl Server {
     {
         self.stream_handler = Some(Box::new(handler));
     }
-    pub async fn run(&self) -> Result<()> {
+    pub async fn run(self: Arc<Self>) -> Result<()> {
         let mut buf = vec![0u8; 65535];
         loop {
             let (len, src_addr) = self.socket.recv_from(&mut buf).await?;
             let data = Bytes::copy_from_slice(&buf[..len]);
 
             tracing::debug!("Received {} bytes from {}", len, src_addr);
+
+            let _server_clone = Arc::clone(&self);
+
             if let Err(e) = self.handle_packet(data, src_addr).await {
                 tracing::warn!("Error handling packet from {}: {}", src_addr, e);
             }
@@ -162,7 +165,20 @@ impl Server {
                 // If we have a handler, call it
                 if let Some(ref handler) = self.stream_handler {
                     if let Some(response) = handler(stream_frame.stream_id, stream_frame.data) {
-                        conn.send_stream_data(stream_frame.stream_id, response)?;
+                        conn.send_stream_data(stream_frame.stream_id, response.clone())?;
+
+                        let mut resp_buff = bytes::BytesMut::new();
+                        let header = LongHeader {
+                            packet_type: crate::quic::LongPacketType::Initial,
+                            version: crate::quic::packet::version::QUIC_V1,
+                            dcid: conn.remote_cid.clone(),
+                            scid: conn.local_cid.clone(), 
+                        };
+                        header.write(&mut resp_buff);
+                        crate::quic::Frame::write_stream(&mut resp_buff, stream_frame.stream_id, &response, true)?;
+
+                        self.send_to(&resp_buff, conn.remote_addr).await?;
+                        tracing::info!("[Stream {} Transmitted respone to {}]", stream_frame.stream_id, conn.remote_addr);
                     }
                 }
             }

@@ -125,6 +125,15 @@ impl LongHeader {
             scid,
         })
     }
+      pub fn write<B: bytes::BufMut>(&self, buf: &mut B) {
+        let first_byte = 0x80 | (self.packet_type.to_bits() << 4);
+        buf.put_u8(first_byte);
+        buf.put_u32(self.version);
+        buf.put_u8(self.dcid.len() as u8);
+        buf.put_slice(self.dcid.as_bytes());
+        buf.put_u8(self.scid.len() as u8);
+        buf.put_slice(self.scid.as_bytes());
+    }
 }
 /// Short Header packet structure (used after handshake)
 #[derive(Debug, Clone)]

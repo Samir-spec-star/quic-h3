@@ -9,7 +9,7 @@ pub mod streams;
 pub mod recovery;
 // Re-export 
 pub use varint::{read_varint, write_varint, varint_len, MAX_VARINT};
-pub use packet::{ConnectionId, LongHeader, LongPacketType, ShortHeader};
+pub use packet::{ConnectionId, LongHeader, LongPacketType, ShortHeader, version};
 pub use frame::{Frame, AckFrame, CryptoFrame, StreamFrame, ConnectionCloseFrame};
 pub use crypto::{derive_initial_secrets, generate_connection_id, ConnectionSecrets, PacketKey};
 pub use connection::{Connection, ConnectionState, Role};

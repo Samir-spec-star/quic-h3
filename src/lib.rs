@@ -1,10 +1,3 @@
-//! #quick-g3
-//! 
-//!  A Quic and Http3 implementation in Rust
-//! 
-//!  This library implements;
-//!  - QUIC (RFC 9000)
-//!  - HTTP/3 (RFC 9114)
 
 
 pub mod error;

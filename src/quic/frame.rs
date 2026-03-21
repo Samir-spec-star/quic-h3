@@ -192,6 +192,15 @@ impl Frame {
         write_varint(buf, ack.first_ack_range)?;
         Ok(())
     }
+    pub fn write_stream<B: bytes::BufMut>(buf: &mut B, stream_id: u64, data: &[u8], fin: bool) -> crate::Result<()> {
+        let mut type_byte = 0x0a; // 0x08 | 0x02 (Length present)
+        if fin { type_byte |= 0x01; }
+        write_varint(buf, type_byte as u64)?;
+        write_varint(buf, stream_id)?;
+        write_varint(buf, data.len() as u64)?;
+        buf.put_slice(data);
+        Ok(())
+    }
 }
 
 pub fn generate_ack(received_packets: &[u64]) -> Option<AckFrame> {

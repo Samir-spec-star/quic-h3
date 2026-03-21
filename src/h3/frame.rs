@@ -4,7 +4,7 @@ use crate::quic::{read_varint, write_varint, varint_len};
 /// HTTP/3 frame types
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum H3FrameType {
-    /// DATA frame (0x00) - carries request/response body
+    /// DATA frame (0x00) - carries request/response
     Data = 0x00,
     /// HEADERS frame (0x01) - carries compressed headers
     Headers = 0x01,
