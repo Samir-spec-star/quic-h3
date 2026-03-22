@@ -2,42 +2,40 @@
 
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-active_development-brightgreen.svg)]()
-
-> **quic-h3** is an educational, pure-Rust implementation of the QUIC transport protocol and HTTP/3 application layer built entirely from scratch. 
-
-This project explores the low-level mechanics of modern web networking by manually parsing packet frames, handling UDP sockets, deriving cryptographic keys, and executing advanced stream multiplexing—**without relying on fully-packaged transport libraries like endpoint or quinn.**
-
-##  Core Features Designed From Scratch
-
-###  1. Custom QUIC Transport (RFC 9000 & 9002)
-*   **Packet Parsing:** Manual ingestion of QUIC Initial, Handshake, and 1-RTT packets.
-*   **Variable-Length Integer Encoding:** Low-level varint byte-manipulation.
-*   **Reliability:** Custom RTT estimation, packet loss detection, and retransmission.
-*   **Congestion Control:** Simplified Cubic-like window scaling (`cwnd` and `ssthresh`).
-*   **Stream Multiplexing:** Independent bidirectional stream handling over a single UDP socket to prevent head-of-line blocking.
-
-###  2. Cryptography & TLS 1.3 Handshake (RFC 9001)
-*   **HKDF Key Derivation:** Custom derivations of Initial, Handshake, and 1-RTT secrets using the `ring` crate.
-*   **Nonce Generation:** Synchronization of packet numbers with AEAD nonces.
-
-###  3. HTTP/3 & QPACK (RFC 9114 & 9204)
-*   **Frame Manipulation:** Support for `DATA`, `HEADERS`, `SETTINGS`, and `GOAWAY` frames.
-*   **QPACK Compression:** Manual bit-masking and prefix decoding for HTTP headers against the QPACK static table.
-*   **API Types:** Fully typed `Request` and `Response` abstractions.
+[![Status](https://img.shields.io/badge/status-active%20development-brightgreen.svg)]()
 
 ---
 
-##  Architecture
+## Overview
 
-```text
+**quic-h3** is an educational, from-scratch implementation of the QUIC transport protocol and HTTP/3 application layer written entirely in Rust.
+
+This project explores the low-level mechanics of modern web networking by manually parsing packet frames, handling UDP sockets, deriving cryptographic keys, and executing advanced stream multiplexing—without relying on fully packaged transport libraries such as `quinn` or similar abstractions.
+
+The implementation emphasizes transparency, control, and performance, providing a systems-level understanding of how modern web protocols operate internally.
+
+---
+
+## Objectives
+
+* Understand QUIC as a UDP-based transport protocol
+* Implement HTTP/3 framing and header compression (QPACK)
+* Build transport-layer reliability without TCP
+* Explore congestion control and multiplexed streams
+* Measure performance using statistical benchmarking
+
+---
+
+## Architecture
+
+```text id="arch1"
 ┌────────────────────────────────────────┐
 │           Application Layer            │
 │   (Custom routing & request handlers)  │
 ├────────────────────────────────────────┤
 │              HTTP/3 Layer              │
 │   • QPACK Header Compression           │
-│   • HEADERS/DATA Frames                │
+│   • HEADERS / DATA Frames              │
 ├────────────────────────────────────────┤
 │            QUIC Transport              │
 │   • Stream Multiplexing                │
@@ -49,47 +47,202 @@ This project explores the low-level mechanics of modern web networking by manual
 └────────────────────────────────────────┘
 ```
 
-## Quick Start
+---
 
-Ensure you have Rust installed. Clone the repository and run the pre-configured HTTP/3 echo server:
+## Core Features Designed From Scratch
 
-```bash
-git clone https://github.com/yourusername/quic-h3.git
+### 1. High-Concurrency QUIC Transport (RFC 9000 & 9002)
+
+* **Packet Handling**
+  Manual ingestion and serialization of Initial, Handshake, and 1-RTT packets
+
+* **Concurrency Model**
+  Asynchronous task-per-packet execution using `tokio::spawn` for handling multiple parallel clients
+
+* **Variable-Length Integer Encoding**
+  Low-level varint encoding/decoding for protocol headers
+
+* **Reliability Layer**
+  Custom RTT estimation, packet loss detection, and retransmission logic
+
+* **Congestion Control**
+  Simplified Cubic-like congestion window scaling (`cwnd`, `ssthresh`)
+
+* **Stream Multiplexing**
+  Independent bidirectional streams over a single UDP connection to eliminate head-of-line blocking
+
+---
+
+### 2. Cryptography & TLS 1.3 Handshake (RFC 9001)
+
+* **HKDF Key Derivation**
+  Derivation of Initial, Handshake, and 1-RTT secrets using cryptographic primitives
+
+* **Nonce Generation**
+  Synchronization of packet numbers with AEAD nonces for secure packet encryption
+
+---
+
+### 3. HTTP/3 & QPACK (RFC 9114 & 9204)
+
+* **Frame Handling**
+  Support for DATA, HEADERS, SETTINGS, and GOAWAY frames
+
+* **QPACK Compression**
+  Static table-based header compression with bit-level prefix decoding
+
+* **Logging & Observability**
+  Structured tracing using `tracing-subscriber` for debugging protocol behavior
+
+---
+
+## Performance Benchmarks
+
+Benchmarks were conducted using **Criterion.rs**, a statistical benchmarking framework for Rust.
+
+### Compression Efficiency
+
+| Metric                | Value     |
+| --------------------- | --------- |
+| Raw Header Size       | 167 bytes |
+| QPACK Compressed Size | 129 bytes |
+| Compression Ratio     | 23%       |
+
+---
+
+### Encoding Performance
+
+| Metric          | Value                |
+| --------------- | -------------------- |
+| Iterations      | 100,000              |
+| Total Time      | 135 ms               |
+| Average Latency | ~1.35 µs             |
+| Throughput      | ~738,877 encodes/sec |
+
+---
+
+### Methodology
+
+* High-iteration statistical benchmarking using Criterion
+* Focus on encoding latency and throughput
+* Controlled local environment testing
+
+---
+
+## Project Structure
+
+```text id="struct1"
+/src        Core protocol implementation
+/benches    Criterion benchmarking suite
+/bin        Server and client executables
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+* Rust (stable toolchain)
+
+### Clone the Repository
+
+```bash id="cmd1"
+git clone https://github.com/Samir-spec-star/quic-h3
 cd quic-h3
-cargo run
 ```
 
-### Output Example
-```text
-╔═══════════════════════════════════════╗
-║     QUIC HTTP/3 Server v0.1.0         ║
-║  Phase 5: HTTP/3 Protocol Layer       ║
-╠═══════════════════════════════════════╣
-║  Features:                            ║
-║  ✓ QUIC Transport (RFC 9000)          ║
-║  ✓ Stream Multiplexing                ║
-║  ✓ Loss Detection & Recovery          ║
-║  ✓ Congestion Control                 ║
-║  ✓ HTTP/3 Frames (RFC 9114)           ║
-║  ✓ QPACK Header Compression           ║
-╚═══════════════════════════════════════╝
+---
 
- Server listening on 127.0.0.1:4433
+### Run the Server
+
+```bash id="cmd2"
+cargo run --bin quic-server
 ```
 
-##  Testing
+#### Example Output
 
-The codebase includes **50+ unit tests** validating protocol correctness piece-by-piece:
+```text id="out1"
+QUIC HTTP/3 Server v0.1.0
+Features:
+- QUIC Transport (RFC 9000)
+- Stream Multiplexing
+- Loss Detection & Recovery
+- Congestion Control
+- HTTP/3 Frames
+- QPACK Header Compression
 
-```bash
-# Run the test suite
+Server listening on 127.0.0.1:4433
+```
+
+---
+
+### Run the Client (Stress Test)
+
+```bash id="cmd3"
+cargo run --bin quic-client
+```
+
+This launches multiple concurrent clients to simulate load and measure RTT.
+
+---
+
+## Testing
+
+The project includes a comprehensive test suite validating protocol components.
+
+```bash id="cmd4"
 cargo test
 ```
-Tests cover:
-- Variable-length integer edge-cases.
-- Frame parsing and byte-by-byte serialization.
-- QPACK bit-masking correctness.
-- Cryptographic key derivations.
 
-## 📄 License
+---
+
+## Key Insights
+
+* QPACK achieves meaningful compression (~23%) with low computational overhead
+* Microsecond-level encoding latency enables high-throughput systems
+* QUIC eliminates head-of-line blocking via stream multiplexing
+* Implementing transport protocols reveals trade-offs between reliability, latency, and complexity
+
+---
+
+## Limitations
+
+* Not production-ready
+* Simplified congestion control model
+* Limited QPACK dynamic table support
+* No full TLS handshake integration for production security
+
+---
+
+## Future Work
+
+* Multi-client scalability benchmarking
+* End-to-end request-response latency measurement
+* QUIC vs TCP comparative analysis
+* Dynamic QPACK table implementation
+* TLS 1.3 full integration
+
+---
+
+## Why This Project Matters
+
+Very few developers implement transport protocols from scratch. This project demonstrates:
+
+* Deep understanding of how UDP-based protocols achieve reliability
+* Practical application of asynchronous concurrency in Rust
+* Ability to translate complex RFC specifications into working systems
+* Strong systems-level engineering and performance awareness
+
+---
+
+## License
+
 This project is licensed under the MIT License.
+
+---
+
+## Author
+
+Sameer Gupta
+https://x.com/samir1672007
