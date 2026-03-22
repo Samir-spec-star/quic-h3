@@ -1,3 +1,4 @@
+
 # quic-h3: A From-Scratch QUIC & HTTP/3 Stack in Rust
 
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
@@ -118,6 +119,13 @@ Benchmarks were conducted using **Criterion.rs**, a statistical benchmarking fra
 | Total Time      | 135 ms               |
 | Average Latency | ~1.35 µs             |
 | Throughput      | ~738,877 encodes/sec |
+
+---
+
+![pdf_small](https://github.com/user-attachments/assets/f32360e2-4f69-4a62-950e-527996b0b177)
+![regression_small](https://github.com/user-attachments/assets/057ac667-fdab-45c3-af36-73e53532404b)
+![relative_pdf_small](https://github.com/user-attachments/assets/00884f62-d8c4-4b17-8cd2-d77edfe7998f)
+![relative_regression_small](https://github.com/user-attachments/assets/65e455e0-dc29-47a9-9851-0b56c074d8ce)
 
 ---
 
